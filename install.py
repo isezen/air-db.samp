@@ -30,7 +30,7 @@ import argparse as _argparse
 from argparse import RawTextHelpFormatter as _rtformatter
 from contextlib import closing
 
-__prog__ = 'Install air database'
+__prog__ = 'Install database'
 __version__ = 'v0.1'
 __author__ = 'Ismail SEZEN'
 __email__ = 'sezenismail@gmail.com'
