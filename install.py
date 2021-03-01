@@ -162,7 +162,7 @@ def target_is_writable(pth):
 def create_tmp_copy(pth):
     """ Create temporary copy of the file """
     fn_tmp = tempfile._get_candidate_names()  # pylint: disable=W0212
-    fn_tmp = path.basename(pth) + '_' + fn_tmp
+    fn_tmp = path.basename(pth) + '_' + fn_tmp.name
     copyf(pth, fn_tmp)
     return fn_tmp
 
