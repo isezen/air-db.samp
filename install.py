@@ -23,7 +23,6 @@ from os import makedirs
 from os import path
 from shutil import copyfile as copyf
 import tempfile
-from tempfile import NamedTemporaryFile as tmpfile
 from timeit import default_timer as timer
 
 import argparse as _argparse
