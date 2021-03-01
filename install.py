@@ -215,6 +215,7 @@ def install(where):
         with closing(con.cursor()) as cur:
             for k, v in par.items():
                 cur.execute('CREATE INDEX {}_index ON data ({})'.format(k, v))
+    con.close()
     makedirs(where, exist_ok=True)
     copyf(tmp, path.join(where, path.basename(file_db)))
     os.remove(tmp)
