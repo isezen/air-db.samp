@@ -162,8 +162,10 @@ def create_tmp_copy(pth):
     """ Create temporary copy of the file """
     fn = path.basename(pth)
     tmp = tmpfile(prefix=fn + '_', delete=False)
+    tmp.close()
+    os.remove(tmp.name)
     copyf(pth, tmp.name)
-    return tmp
+    return tmp.name
 
 
 def get_cwd():
@@ -203,7 +205,7 @@ def install(where):
     target_is_writable(where)  # check write permission
     file_db, path_to_pkl, lic_file = get_paths()
     tmp = create_tmp_copy(file_db)
-    with sq3.connect(tmp.name) as con:
+    with sq3.connect(tmp) as con:
         with closing(con.cursor()) as cur:
             rows = get_values(path_to_pkl)
             cur.executemany('INSERT INTO data VALUES(?,?,?,?,?);', rows)
@@ -214,9 +216,8 @@ def install(where):
             for k, v in par.items():
                 cur.execute('CREATE INDEX {}_index ON data ({})'.format(k, v))
     makedirs(where, exist_ok=True)
-    copyf(tmp.name, path.join(where, path.basename(file_db)))
-    tmp.close()
-    os.unlink(tmp.name)
+    copyf(tmp, path.join(where, path.basename(file_db)))
+    # os.remove(tmp)
     copyf(lic_file, path.join(where, path.basename(lic_file)))
 
 
