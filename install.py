@@ -22,6 +22,7 @@ from glob import glob
 from os import makedirs
 from os import path
 from shutil import copyfile as copyf
+import tempfile
 from tempfile import NamedTemporaryFile as tmpfile
 from timeit import default_timer as timer
 
@@ -160,12 +161,10 @@ def target_is_writable(pth):
 
 def create_tmp_copy(pth):
     """ Create temporary copy of the file """
-    fn = path.basename(pth)
-    tmp = tmpfile(prefix=fn + '_', delete=False)
-    tmp.close()
-    os.remove(tmp.name)
-    copyf(pth, tmp.name)
-    return tmp.name
+    fn_tmp = tempfile._get_candidate_names()  # pylint: disable=W0212
+    fn_tmp = path.basename(pth) + '_' + fn_tmp
+    copyf(pth, fn_tmp)
+    return fn_tmp
 
 
 def get_cwd():
@@ -215,9 +214,10 @@ def install(where):
         with closing(con.cursor()) as cur:
             for k, v in par.items():
                 cur.execute('CREATE INDEX {}_index ON data ({})'.format(k, v))
+    con.close()
     makedirs(where, exist_ok=True)
     copyf(tmp, path.join(where, path.basename(file_db)))
-    # os.remove(tmp)
+    os.remove(tmp)
     copyf(lic_file, path.join(where, path.basename(lic_file)))
 
 
