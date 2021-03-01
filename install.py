@@ -160,7 +160,8 @@ def target_is_writable(pth):
 
 def create_tmp_copy(path):
     """ Create temporary copy of the file """
-    tmp = tmpfile(delete=True)
+    fn = path.basename(path)
+    tmp = tmpfile(prefix=fn + '_', delete=False)
     copyf(path, tmp.name)
     return tmp
 
@@ -194,7 +195,7 @@ def get_licence():
     lic_file = path.join(get_cwd(), fn + ".LICENSE")
     if not path.exists(lic_file):
         raise FileExistsError(path.basename(lic_file) + ' does not exist')
-    return open(lic_file, "r", encoding='utf8').read()
+    return open(lic_file, "r", enconding='utf8').read()
 
 
 def install(where):
@@ -215,6 +216,7 @@ def install(where):
     makedirs(where, exist_ok=True)
     copyf(tmp.name, path.join(where, path.basename(file_db)))
     tmp.close()
+    os.unlink(tmp.name)
     copyf(lic_file, path.join(where, path.basename(lic_file)))
 
 
