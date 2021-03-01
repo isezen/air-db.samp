@@ -158,11 +158,11 @@ def target_is_writable(pth):
     return True
 
 
-def create_tmp_copy(path):
+def create_tmp_copy(pth):
     """ Create temporary copy of the file """
-    fn = path.basename(path)
+    fn = path.basename(pth)
     tmp = tmpfile(prefix=fn + '_', delete=False)
-    copyf(path, tmp.name)
+    copyf(pth, tmp.name)
     return tmp
 
 
