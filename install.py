@@ -204,7 +204,7 @@ def install(where):
     target_is_writable(where)  # check write permission
     file_db, path_to_pkl, lic_file = get_paths()
     tmp = create_tmp_copy(file_db)
-    with sq3.connect(tmp) as con:
+    with closing(sq3.connect(tmp)) as con:
         with closing(con.cursor()) as cur:
             rows = get_values(path_to_pkl)
             cur.executemany('INSERT INTO data VALUES(?,?,?,?,?);', rows)
@@ -214,7 +214,6 @@ def install(where):
         with closing(con.cursor()) as cur:
             for k, v in par.items():
                 cur.execute('CREATE INDEX {}_index ON data ({})'.format(k, v))
-    con.close()
     makedirs(where, exist_ok=True)
     copyf(tmp, path.join(where, path.basename(file_db)))
     os.remove(tmp)
