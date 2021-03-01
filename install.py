@@ -195,7 +195,7 @@ def get_licence():
     lic_file = path.join(get_cwd(), fn + ".LICENSE")
     if not path.exists(lic_file):
         raise FileExistsError(path.basename(lic_file) + ' does not exist')
-    return open(lic_file, "r", enconding='utf8').read()
+    return open(lic_file, "r", encoding='utf8').read()
 
 
 def install(where):
