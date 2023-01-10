@@ -3,7 +3,8 @@
 # pylint: disable=C0103, C0321, W0621
 
 """
-Install Database Script
+Install Database Script.
+
 ~~~~~~~~~~~~~~~~~~~~~~~
 Install SQLite database to a specific folder
 
@@ -31,7 +32,7 @@ from argparse import RawTextHelpFormatter as _rtformatter
 from contextlib import closing
 
 __prog__ = 'Install database'
-__version__ = 'v0.1'
+__version__ = 'v0.2'
 __author__ = 'Ismail SEZEN'
 __email__ = 'sezenismail@gmail.com'
 __github__ = 'isezen'
@@ -40,55 +41,59 @@ __year__ = '2021'
 
 
 def _create_argparser_(desc, epilog):
-    """ Create an argparser object """
+    """Create an argparser object."""
     file_py = path.basename(sys.argv[0])
     p = _argparse.ArgumentParser(
         description=desc, epilog=epilog.format(file_py),
         formatter_class=_rtformatter)
+    vstr = '{} {}\n{} (c) {} {}'
     p.add_argument(
         '-v', '--version', help="version", action="version",
-        version='{} {}\n{} (c) {} {}'.format(__prog__, __version__,
-                                             __license__, __year__,
-                                             __author__))
+        version=vstr.format(__prog__, __version__,
+                            __license__, __year__,
+                            __author__))
     return p
 
 
 def read_pkl(file):
-    """ Read pickle file """
+    """Read pickle file."""
     with open(file, 'rb') as f:
         x = pickle.load(f)
     return x
 
 
 def get_meta_id_list(cur):
-    """ get meta table as list """
+    """Get meta table as list."""
     cur.execute("SELECT id, name FROM meta")
     rows = cur.fetchall()
     return list(map(list, zip(*rows)))
 
 
 def get_meta_id(meta_name, meta_list):
-    """ get meta id from database """
+    """Get meta id from database."""
     return [meta_list[0][meta_list[1].index(v)] if v in meta_list[1] else 0
             for v in meta_name]
 
 
 def get_ids(file):
-    """ Get pollutant and station ids from file name """
+    """Get parameter and station ids from file name."""
     bn = path.basename(file).split('.')[0]
     return (int(i) for i in bn.split('_'))
 
 
 def split2meta(v):
-    """ Split a list to values and meta """
+    """Split a list to values and meta."""
     m = [i if isinstance(i, str) else 'ok' for i in v]
     v = [i if isinstance(i, float) else float('NaN') for i in v]
     return m, v
 
 
-def pbar(iterable, prefix='', suffix='',  # pylint: disable=R0913
-         decimals=1, length=100, fill='█', printEnd="\r"):
-    """ Call in a loop to create terminal progress bar """
+def pbar(  # pylint: disable=R0913
+    iterable, prefix='', suffix='',
+    decimals=1, length=100, fill='█',
+    printEnd="\r"
+):
+    """Call in a loop to create terminal progress bar."""
     total = len(iterable)
 
     def print_pbar(iteration):
@@ -105,8 +110,19 @@ def pbar(iterable, prefix='', suffix='',  # pylint: disable=R0913
     print()
 
 
+def get_measurement_values(pth):
+    """Get measured parameter values from pkl files."""
+    pkl_files = glob(path.join(pth, '*.pkl'))
+    pkl_files.remove(path.join(pth, 'index.pkl'))
+    pkl_files.sort()
+    for file in pbar(pkl_files,
+                     prefix='Creating Measurement Table', length=50):
+        pol_id, sta_id = get_ids(file)
+        yield pol_id, sta_id, True
+
+
 def get_values(pth):
-    """ get a row from pickles """
+    """Get a row from pickles."""
     index_pkl = path.join(pth, 'index.pkl')
     pkl_files = glob(path.join(pth, '*.pkl'))
     pkl_files.remove(index_pkl)
@@ -121,7 +137,7 @@ def get_values(pth):
 
 
 def get_meta(path, meta_list):
-    """ get a row from pickles """
+    """Get a row from pickles."""
     index_pkl = path.join(path, 'index.pkl')
     pkl_files = glob(path.join(path, '*.pkl'))
     pkl_files.remove(index_pkl)
@@ -138,20 +154,20 @@ def get_meta(path, meta_list):
 
 
 def agree_to_lic():
-    """ Accept or decline licence agreement """
+    """Accept or decline licence agreement."""
     print(get_licence())
     a = input('\nDo you accept? (yes or [No]) ')
     return a.lower() == 'yes' or a.lower() == 'y'
 
 
 def target_is_writable(pth):
-    """ check if target directory is writable """
+    """Check if target directory is writable."""
     if pth == '':
         pth = os.getcwd()
     if path.exists(pth):
         if not os.access(pth, os.W_OK):
-            raise PermissionError("You don't have permission to write to '" +
-                                  pth + "'.")
+            raise PermissionError(
+                f"You don't have permission to write to '{pth}'.")
     else:
         udir = path.split(pth)[0]
         return target_is_writable(udir)
@@ -159,7 +175,7 @@ def target_is_writable(pth):
 
 
 def create_tmp_copy(pth):
-    """ Create temporary copy of the file """
+    """Create temporary copy of the file."""
     fn_tmp = next(tempfile._get_candidate_names())  # pylint: disable=W0212
     fn_tmp = path.join(tempfile.gettempdir(),
                        path.basename(pth) + '_' + fn_tmp)
@@ -168,7 +184,7 @@ def create_tmp_copy(pth):
 
 
 def get_cwd():
-    """ get dir name of path to this file """
+    """Get dir name of path to this file."""
     cwd = path.dirname(__file__)
     if cwd == '':
         cwd = '.'
@@ -179,7 +195,7 @@ def get_cwd():
 
 
 def get_paths():
-    """ get required paths to db and pkl folders """
+    """Get required paths to db and pkl folders."""
     cwd = get_cwd()
     db_files = glob(path.join(cwd, '*.db'))
     lic_file = glob(path.join(cwd, '*.LICENSE'))
@@ -189,7 +205,7 @@ def get_paths():
 
 
 def get_licence():
-    """ get licence text for database """
+    """Get licence text for database."""
     file_db, _, _ = get_paths()
     file_db_name = path.basename(file_db)
     fn, _ = path.splitext(file_db_name)
@@ -200,7 +216,7 @@ def get_licence():
 
 
 def install(where):
-    """ Main entry function """
+    """Install database."""
     target_is_writable(where)  # check write permission
     file_db, path_to_pkl, lic_file = get_paths()
     tmp = create_tmp_copy(file_db)
@@ -209,11 +225,16 @@ def install(where):
             rows = get_values(path_to_pkl)
             cur.executemany('INSERT INTO data VALUES(?,?,?,?,?);', rows)
             con.commit()
+            #
+            rows = get_measurement_values(path_to_pkl)
+            cur.executemany('INSERT INTO measurement VALUES(?,?,?);', rows)
+            con.commit()
+
         print('Creating indices...')
         par = {'param': 'param, sta, date', 'date': 'date', 'sta': 'sta'}
         with closing(con.cursor()) as cur:
             for k, v in par.items():
-                cur.execute('CREATE INDEX {}_index ON data ({})'.format(k, v))
+                cur.execute(f'CREATE INDEX {k}_index ON data ({v})')
     makedirs(where, exist_ok=True)
     copyf(tmp, path.join(where, path.basename(file_db)))
     os.remove(tmp)
